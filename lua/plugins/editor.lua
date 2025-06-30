@@ -1,0 +1,232 @@
+return {
+    { "folke/flash.nvim" },
+    { "folke/trouble.nvim" },
+    {
+        "hrsh7th/nvim-cmp",
+        dependencies = { "hrsh7th/cmp-emoji" },
+        ---@param opts cmp.ConfigSchema
+        opts = function(_, opts)
+            table.insert(opts.sources, { name = "emoji" })
+            table.insert(opts.sources, {
+                {
+                    name = "nvim_lsp",
+                    entry_filter = function(entry, ctx)
+                        local kind = types.lsp.CompletionItemKind[entry:get_kind()]
+
+                        if kind == "Text" or kind == "Snippet" then
+                            return false
+                        end
+
+                        return true
+                    end,
+                },
+            })
+        end,
+    },
+    {
+        "nvim-telescope/telescope.nvim",
+        keys = {
+            {
+                "<leader>fp",
+                function()
+                    require("telescope.builtin").find_files({ cwd = require("lazy.core.config").options.root })
+                end,
+                desc = "Find Plugin File",
+            },
+            {
+                "<leader>ffp",
+                "<cmd>Telescope projects<cr>",
+                desc = "Projects",
+            },
+        },
+        opts = {
+            defaults = {
+                layout_strategy = "horizontal",
+                layout_config = { prompt_position = "top" },
+                sorting_strategy = "ascending",
+                winblend = 0,
+            },
+        },
+    },
+    {
+        "mfussenegger/nvim-dap",
+        dependencies = {
+            "rcarriga/nvim-dap-ui",
+            "theHamsta/nvim-dap-virtual-text",
+            "nvim-neotest/nvim-nio",
+        },
+        config = function()
+            local dap = require("dap")
+            local dapui = require("dapui")
+
+            dapui.setup({
+                layouts = {
+                    {
+                        elements = {
+                            { id = "scopes", size = 0.25 },
+                            { id = "breakpoints", size = 0.25 },
+                            { id = "stacks", size = 0.25 },
+                            { id = "watches", size = 0.25 },
+                        },
+                        position = "left",
+                        size = 40,
+                    },
+                    {
+                        elements = {
+                            { id = "repl", size = 0.5 },
+                            { id = "console", size = 0.5 },
+                        },
+                        position = "bottom",
+                        size = 10,
+                    },
+                },
+            })
+
+            dap.adapters.coreclr = {
+                type = "executable",
+                command = vim.fn.stdpath("data") .. "/mason/bin/netcoredbg",
+                args = { "--interpreter=vscode" },
+            }
+
+            dap.configurations.cs = {
+                {
+                    type = "coreclr",
+                    name = "Launch - Auto-detect",
+                    request = "launch",
+                    program = function()
+                        local cwd = vim.fn.getcwd()
+                        local possible_paths = {
+                            cwd .. "/bin/Debug/net8.0/*.dll",
+                            cwd .. "/bin/Debug/net7.0/*.dll",
+                            cwd .. "/bin/Debug/net6.0/*.dll",
+                            cwd .. "/*/bin/Debug/net8.0/*.dll",
+                            cwd .. "/*/bin/Debug/net7.0/*.dll",
+                            cwd .. "/*/bin/Debug/net6.0/*.dll",
+                        }
+                        for _, pattern in ipairs(possible_paths) do
+                            local files = vim.fn.glob(pattern, false, true)
+                            if #files > 0 then
+                                return files[1]
+                            end
+                        end
+                        return vim.fn.input("Path to dll: ", cwd .. "/bin/Debug/", "file")
+                    end,
+                    cwd = "${workspaceFolder}",
+                    stopAtEntry = false,
+                    console = "integratedTerminal",
+                },
+                {
+                    type = "coreclr",
+                    name = "Launch - Custom",
+                    request = "launch",
+                    program = function()
+                        return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file")
+                    end,
+                    cwd = "${workspaceFolder}",
+                    stopAtEntry = false,
+                    console = "integratedTerminal",
+                    args = function()
+                        local args_string = vim.fn.input("Arguments: ")
+                        return vim.split(args_string, " ")
+                    end,
+                },
+                {
+                    type = "coreclr",
+                    name = "Attach to Process",
+                    request = "attach",
+                    processId = function()
+                        return require("dap.utils").pick_process({ filter = "dotnet" })
+                    end,
+                },
+            }
+
+            dap.listeners.after.event_initialized["dapui_config"] = function()
+                dapui.open()
+            end
+            dap.listeners.before.event_terminated["dapui_config"] = function()
+                dapui.close()
+            end
+            dap.listeners.before.event_exited["dapui_config"] = function()
+                dapui.close()
+            end
+
+            require("nvim-dap-virtual-text").setup({
+                enabled = true,
+                enabled_commands = true,
+                highlight_changed_variables = true,
+                highlight_new_as_changed = false,
+                show_stop_reason = true,
+                commented = false,
+            })
+        end,
+    },
+    {
+        "ahmedkhalf/project.nvim",
+        config = function()
+            require("project_nvim").setup({
+                detection_methods = { "pattern", "lsp" },
+                patterns = { ".git", "*.sln", "*.csproj", ".vscode", "omnisharp.json" },
+                show_hidden = false,
+                silent_chdir = true,
+            })
+        end,
+    },
+    {
+        "seblyng/roslyn.nvim",
+        ft = "cs",
+        opts = {
+            config = {
+                settings = {
+                    ["csharp|inlay_hints"] = {
+                        csharp_enable_inlay_hints_for_implicit_object_creation = true,
+                        csharp_enable_inlay_hints_for_implicit_variable_types = true,
+                        csharp_enable_inlay_hints_for_lambda_parameter_types = true,
+                        csharp_enable_inlay_hints_for_types = true,
+                        dotnet_enable_inlay_hints_for_indexer_parameters = true,
+                        dotnet_enable_inlay_hints_for_literal_parameters = true,
+                        dotnet_enable_inlay_hints_for_object_creation_parameters = true,
+                        dotnet_enable_inlay_hints_for_other_parameters = true,
+                        dotnet_enable_inlay_hints_for_parameters = true,
+                        dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix = true,
+                        dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = true,
+                        dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = true,
+                    },
+                    ["csharp|code_lens"] = {
+                        dotnet_enable_references_code_lens = true,
+                        dotnet_enable_tests_code_lens = true,
+                    },
+                    ["csharp|completion"] = {
+                        dotnet_provide_regex_completions = true,
+                        dotnet_show_completion_items_from_unimported_namespaces = true,
+                        dotnet_show_name_completion_suggestions = true,
+                    },
+                    ["csharp|highlighting"] = {
+                        dotnet_highlight_related_json_components = true,
+                        dotnet_highlight_related_regex_components = true,
+                    },
+                },
+            },
+        },
+    },
+    {
+        "nvim-neotest/neotest",
+        dependencies = {
+            "Issafalcon/neotest-dotnet",
+        },
+        opts = {
+            adapters = {
+                ["neotest-dotnet"] = {
+                    dap = {
+                        justMyCode = false,
+                        stopOnEntry = false,
+                    },
+                    custom_attributes = {
+                        xunit = { "Fact", "Theory" },
+                        nunit = { "Test", "TestCase" },
+                        mstest = { "TestMethod" },
+                    },
+                },
+            },
+        },
+    },
+}
