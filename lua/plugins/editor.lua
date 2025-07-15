@@ -64,6 +64,11 @@ return {
                 "<cmd>Telescope projects<CR>",
                 desc = "Recent Projects (<c-w> to chdir)",
             },
+            {
+                "<leader>rg",
+                "<cmd>Telescope live_grep<CR>",
+                desc = "grep",
+            },
         },
         opts = {
             defaults = {
@@ -71,6 +76,17 @@ return {
                 layout_config = { prompt_position = "top" },
                 sorting_strategy = "ascending",
                 winblend = 0,
+            },
+            pickers = {
+                live_grep = {
+                    path_display = { "filename_only" },
+                    layout_strategy = "vertical",
+                    layout_config = {
+                        width = 0.9,
+                        height = 0.8,
+                        prompt_position = "top",
+                    },
+                },
             },
         },
     },
