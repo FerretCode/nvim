@@ -6,7 +6,7 @@ vim.o.expandtab = true
 vim.o.softtabstop = 4
 vim.o.shiftwidth = 4
 
--- vim.o.guicursor = "a:block"
+vim.o.guicursor = "a:block"
 
 require("conform").setup({
     formatters_by_ft = {
@@ -16,11 +16,6 @@ require("conform").setup({
         stylua = {
             prepend_args = { "--indent-type", "Spaces", "--indent-width", "4" },
         },
-        prettier = {
-            args = function(ctx)
-                return { "--tab-width", "4", "--parser", "babel", ctx.filename }
-            end,
-        },
     },
 })
 
@@ -28,29 +23,10 @@ require("lspconfig").gopls.setup({
     settings = {
         gopls = {
             format = {
-                tabWidht = 4,
+                tabWidth = 4,
             },
         },
     },
-})
-
-require("lspconfig").clangd.setup({
-    cmd = {
-        "clangd",
-        "--background-index",
-        "--clang-tidy",
-        "--header-insertion=never",
-        "--completion-style=detailed",
-        "--pch-storage=memory",
-        "--header-insertion-decorators=false",
-        "--log=verbose",
-        "--query-driver=/usr/bin/arm-none-eabi-g*",
-        "--fallback-style=webkit",
-    },
-    filetypes = { "c", "cpp", "objc", "obcjpp" },
-    root_dir = function(fname)
-        return require("lspconfig").util.root_pattern("compile_commands.json", ".git")(fname)
-    end,
 })
 
 require("lspconfig").lua_ls.setup({
@@ -73,4 +49,50 @@ require("lspconfig").lua_ls.setup({
             },
         },
     },
+})
+
+require("mason").setup({
+    registries = {
+        "github:mason-org/mason-registry",
+        "github:Crashdummyy/mason-registry",
+    },
+})
+
+require("roslyn").setup({
+    choose_target = function(targets)
+        local sln_target = vim.iter(targets):find(function(item)
+            return string.match(item, ".sln$")
+        end)
+
+        if sln_target then
+            return sln_target
+        end
+    end,
+})
+
+require("conform").setup({
+    format_on_save = function(bufnr)
+        if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
+            return
+        end
+        return { timeout_ms = 500, lsp_format = "fallback" }
+    end,
+})
+
+vim.api.nvim_create_user_command("FormatDisable", function(args)
+    if args.bang then
+        vim.b.disable_autoformat = true
+    else
+        vim.g.disable_autoformat = true
+    end
+end, {
+    desc = "Disable autoformat-on-save",
+    bang = true,
+})
+
+vim.api.nvim_create_user_command("FormatEnable", function()
+    vim.b.disable_autoformat = false
+    vim.g.disable_autoformat = false
+end, {
+    desc = "Re-enable autoformat-on-save",
 })
