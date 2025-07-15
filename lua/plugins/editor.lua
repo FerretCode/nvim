@@ -61,8 +61,8 @@ return {
         keys = {
             {
                 "<leader>r",
-                ":lua require'telescope'.extensions.project.project{}<CR>",
-                desc = "Recent Projects",
+                "<cmd>Telescope projects<CR>",
+                desc = "Recent Projects (<c-w> to chdir)",
             },
         },
         opts = {
@@ -71,23 +71,6 @@ return {
                 layout_config = { prompt_position = "top" },
                 sorting_strategy = "ascending",
                 winblend = 0,
-            },
-            extensions = {
-                project = {
-                    ignore_missing_dirs = true,
-                    sync_with_nvim_tree = true,
-                    base_dirs = {
-                        { "~/source/repos", max_depth = 2 },
-                        { "~/code/", max_depth = 3 },
-                    },
-                    cd_scope = { "global" },
-                    on_project_selected = function(prompt_bufnr)
-                        local project_actions = require("telescope._extensions.project.actions")
-                        project_actions.change_working_directory(prompt_bufnr, false)
-
-                        vim.cmd("Neotree close")
-                    end,
-                },
             },
         },
     },
@@ -204,10 +187,15 @@ return {
         end,
     },
     {
-        "nvim-telescope/telescope-project.nvim",
-        dependencies = {
-            "nvim-telescope/telescope.nvim",
-        },
+        "ahmedkhalf/project.nvim",
+        config = function()
+            require("project_nvim").setup({
+                detection_methods = { "pattern", "lsp" },
+                patterns = { ".git" },
+                show_hidden = false,
+                silent_chdir = true,
+            })
+        end,
     },
     {
         "seblyng/roslyn.nvim",
