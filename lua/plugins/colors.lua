@@ -3,10 +3,11 @@ return {
     { "romainl/Apprentice" },
     { "diegoulloao/neofusion.nvim" },
     { "catppuccin/nvim", name = "catppuccin" },
+    { "AlphaTechnolog/pywal.nvim", name = "pywal" },
     {
         "LazyVim/LazyVim",
         opts = {
-            colorscheme = "apprentice",
+            colorscheme = "pywal",
         },
     },
     {

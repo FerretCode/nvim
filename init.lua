@@ -8,15 +8,36 @@ vim.o.shiftwidth = 4
 
 vim.o.guicursor = "a:block"
 
+vim.o.mouse = "a"
+
+vim.api.nvim_set_option("clipboard", "unnamed")
+
 require("conform").setup({
     formatters_by_ft = {
         lua = { "stylua" },
+        html = { "prettier" },
     },
     formatters = {
         stylua = {
             prepend_args = { "--indent-type", "Spaces", "--indent-width", "4" },
         },
+        prettier = {
+            prepend_args = { "--tab-width", "4" },
+        },
     },
+})
+
+require("lspconfig").clangd.setup({
+    cmd = {
+        "clangd",
+        "--background-index",
+        "--clang-tidy",
+        "--header-insertion=iwyu",
+        "--completion-style=detailed",
+        "--function-arg-placeholders=true",
+        "--compile-commands-dir=build",
+    },
+    filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "ino", "arduino" },
 })
 
 require("lspconfig").gopls.setup({
@@ -79,6 +100,10 @@ require("conform").setup({
     end,
 })
 
+require("telekasten").setup({
+    home = vim.fn.expand("~/vaults/zettelkasten"),
+})
+
 vim.api.nvim_create_user_command("FormatDisable", function(args)
     if args.bang then
         vim.b.disable_autoformat = true
@@ -95,4 +120,11 @@ vim.api.nvim_create_user_command("FormatEnable", function()
     vim.g.disable_autoformat = false
 end, {
     desc = "Re-enable autoformat-on-save",
+})
+
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+    pattern = "*.ino",
+    callback = function()
+        vim.bo.filetype = "cpp"
+    end,
 })
