@@ -6,8 +6,13 @@ vim.o.expandtab = true
 vim.o.softtabstop = 4
 vim.o.shiftwidth = 4
 
-vim.o.guicursor = "a:block"
-
+-- for block, = "a:block"
+vim.o.guicursor = table.concat({
+    "n-v-c:block", -- normal, visual, command-line -> block
+    "i:ver25", -- insert -> vertical beam at 25% width
+    "r-cr:hor20", -- replace modes -> horizontal bar
+    "o:hor50", -- operator-pending -> thicker bar
+}, ",")
 vim.o.mouse = "a"
 
 vim.api.nvim_set_option("clipboard", "unnamed")

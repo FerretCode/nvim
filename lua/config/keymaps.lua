@@ -7,6 +7,7 @@ vim.keymap.set("n", "<leader>zg", ":Telekasten search_notes<CR>", { desc = "[Z]e
 vim.keymap.set("n", "<leader>zn", ":Telekasten new_note<CR>", { desc = "[Z]ettel New Note" })
 vim.keymap.set("n", "<leader>zb", ":Telekasten show_backlinks<CR>", { desc = "[Z]ettel Show Backlinks" })
 vim.keymap.set("n", "<leader>zp", ":Telekasten panel<CR>", { desc = "[Z]ettel Panel" })
+vim.keymap.set("n", "<leader>zl", ":Telekasten insert_link<CR>", { desc = "[Z]ettel Insert Backlink" })
 
 vim.keymap.set("n", "<leader>zi", function()
     local inbox_dir = vim.fn.expand("~/vaults/zettelkasten/inbox")
