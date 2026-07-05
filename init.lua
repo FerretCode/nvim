@@ -7,15 +7,17 @@ vim.o.softtabstop = 4
 vim.o.shiftwidth = 4
 
 -- for block, = "a:block"
-vim.o.guicursor = table.concat({
+--[[vim.o.guicursor = table.concat({
     "n-v-c:block", -- normal, visual, command-line -> block
     "i:ver25", -- insert -> vertical beam at 25% width
     "r-cr:hor20", -- replace modes -> horizontal bar
     "o:hor50", -- operator-pending -> thicker bar
-}, ",")
+}, ",")]]
+--
+vim.o.guicursor = "a:block"
 vim.o.mouse = "a"
 
-vim.api.nvim_set_option("clipboard", "unnamed")
+vim.api.nvim_set_option("clipboard", "unnamedplus")
 
 require("conform").setup({
     formatters_by_ft = {
